@@ -12,14 +12,9 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 wallet_address = "9ky2EiBoyXmhzC6H1KVPyQiUKpSyENLh7WxCEQA48WYj"
 
 # Telegram bot token and chat ID
-bot_token = '7668068869:AAH9wQrbxSdNlNlu6m1xa2zQWUtBE1p6aYM'
-chat_id = '-1002329806079'
+bot_token = ''
+chat_id = ''
 
-# DeFi Program IDs
-defi_program_ids = [
-    '9xQeWvG816bUx9EPf4V5thG2pHf7k5k9t3d4y5k4k4k4',  # Serum
-    'EhhTK9k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4'   # Raydium
-]
 
 # Function to get the latest transactions
 def get_latest_transactions(wallet_address):
