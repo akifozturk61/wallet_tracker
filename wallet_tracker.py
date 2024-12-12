@@ -13,8 +13,7 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 wallet_address = "9ky2EiBoyXmhzC6H1KVPyQiUKpSyENLh7WxCEQA48WYj"
 
 # Telegram bot token and chat ID
-# bot_token = '7668068869:AAH9wQrbxSdNlNlu6m1xa2zQWUtBE1p6aYM'
-# chat_id = '-1002329806079'
+
 
 # DeFi Program IDs
 defi_program_ids = [
