@@ -13,7 +13,8 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 wallet_address = "9ky2EiBoyXmhzC6H1KVPyQiUKpSyENLh7WxCEQA48WYj"
 
 # Telegram bot token and chat ID
-
+# bot_token = '7668068869:AAH9wQrbxSdNlNlu6m1xa2zQWUtBE1p6aYM'
+# chat_id = '-1002329806079'
 
 # DeFi Program IDs
 defi_program_ids = [
@@ -66,26 +67,31 @@ def send_notification(transaction):
     mint_address = check_mint_address(transaction)
     if mint_address:
         message = f"Mint address ending with 'pump' found: `{mint_address}`"
+        message2 = f"/bundle {mint_address}"
     else:
         message = "No token address ending with 'pump' found, but other events have triggered."
     url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
     data = {'chat_id': chat_id, 'text': message, 'parse_mode': "Markdown"}
     response = requests.post(url, data=data)
     print(f"Notification sent: {response.json()}")
+    time.sleep(1)
+    data = {'chat_id': chat_id, 'text': message2}
+    response = requests.post(url, data=data)
+    print(f"Notification2 sent: {response.json()}")
 
 
 # Periodically check for new transactions and send notifications
 while True:
     try:
-        # new_transactions = check_new_transactions()
-        transactions = get_latest_transactions(wallet_address).value
-        new_transactions = solana_client.get_transaction(tx_sig=transactions[0].signature, max_supported_transaction_version=0, encoding="jsonParsed")
-        send_notification(new_transactions)
+        new_transactions = check_new_transactions()
+        # transactions = get_latest_transactions(wallet_address).value
+        # new_transactions = solana_client.get_transaction(tx_sig=transactions[5].signature, max_supported_transaction_version=0, encoding="jsonParsed")
+        # send_notification(new_transactions)
         if new_transactions:
             print("New potential transactions detected")
             for tx in new_transactions:
-                print(f"New transaction detected: {tx.signature}")
-                send_notification(tx)
+                tzx = solana_client.get_transaction(tx_sig=tx.signature, max_supported_transaction_version=0, encoding="jsonParsed")
+                send_notification(tzx)
         time.sleep(60)  # Check every 60 seconds
     except HTTPStatusError as e:
         if e.response.status_code == 429:
