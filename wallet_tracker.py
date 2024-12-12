@@ -3,6 +3,7 @@ from solana.rpc.api import Client
 import time
 from solders.pubkey import Pubkey
 from httpx import HTTPStatusError
+import json
 
 # Initialize Solana client
 solana_client = Client("https://api.mainnet-beta.solana.com")
@@ -12,9 +13,13 @@ solana_client = Client("https://api.mainnet-beta.solana.com")
 wallet_address = "9ky2EiBoyXmhzC6H1KVPyQiUKpSyENLh7WxCEQA48WYj"
 
 # Telegram bot token and chat ID
-bot_token = ''
-chat_id = ''
 
+
+# DeFi Program IDs
+defi_program_ids = [
+    '9xQeWvG816bUx9EPf4V5thG2pHf7k5k9t3d4y5k4k4k4',  # Serum
+    'EhhTK9k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4k4'   # Raydium
+]
 
 # Function to get the latest transactions
 def get_latest_transactions(wallet_address):
@@ -44,28 +49,38 @@ def check_new_transactions():
     
     return new_transactions
 
-def is_defi_transaction(transaction):
-    print("-------")
-    print(transaction)
-    print("-------")
-
-    tx_details = solana_client.confirm_transaction(transaction.signature)
-    for instruction in tx_details['result']['transaction']['message']['instructions']:
-        if instruction['programId'] in defi_program_ids:
-            return True
-    return False
+# Function to check if any mint address ends with "pump"
+def check_mint_address(tzx_id):
+    tzx_json = json.loads(tzx_id.to_json())
+    pre_token_balances = tzx_json['result']['meta']['preTokenBalances']
+    for balance in pre_token_balances:
+        mint_address = balance['mint']
+        if mint_address.endswith("pump"):
+            return mint_address
+    return None
 
 def send_notification(transaction):
-    message = f"New DeFi transaction detected: {transaction.signature}"
+    message = ""
+    # Assuming tzx_json is the JSON string of your transaction response
+    # Check the mint addresses
+    mint_address = check_mint_address(transaction)
+    if mint_address:
+        message = f"Mint address ending with 'pump' found: `{mint_address}`"
+    else:
+        message = "No token address ending with 'pump' found, but other events have triggered."
     url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
-    data = {'chat_id': chat_id, 'text': message}
+    data = {'chat_id': chat_id, 'text': message, 'parse_mode': "Markdown"}
     response = requests.post(url, data=data)
     print(f"Notification sent: {response.json()}")
+
 
 # Periodically check for new transactions and send notifications
 while True:
     try:
-        new_transactions = check_new_transactions()
+        # new_transactions = check_new_transactions()
+        transactions = get_latest_transactions(wallet_address).value
+        new_transactions = solana_client.get_transaction(tx_sig=transactions[0].signature, max_supported_transaction_version=0, encoding="jsonParsed")
+        send_notification(new_transactions)
         if new_transactions:
             print("New potential transactions detected")
             for tx in new_transactions:
